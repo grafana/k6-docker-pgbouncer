@@ -1,3 +1,10 @@
+Loadimpact patches
+======================
+- Additionaly generate monitoring user in the userlist.txt from `MONIT_USER` and `MONIT_PASSWORD` env vars
+
+- Build as loadimpact/pgbouncer docker image
+
+
 PgBouncer Docker image
 ======================
 

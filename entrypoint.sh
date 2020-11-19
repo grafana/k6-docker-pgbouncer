@@ -49,6 +49,17 @@ if [ -n "$DB_USER" -a -n "$DB_PASSWORD" ] && ! grep -q "^\"$DB_USER\"" ${PG_CONF
   echo "Wrote authentication credentials to ${PG_CONFIG_DIR}/userlist.txt"
 fi
 
+# Same for monitoring user
+if [ -n "$MONIT_USER" -a -n "$MONIT_PASSWORD" ] && ! grep -q "^\"$MONIT_USER\"" ${PG_CONFIG_DIR}/userlist.txt; then
+  if [ "$AUTH_TYPE" != "plain" ]; then
+     pass="md5$(echo -n "$MONIT_PASSWORD$MONIT_USER" | md5sum | cut -f 1 -d ' ')"
+  else
+     pass="$MONIT_PASSWORD"
+  fi
+  echo "\"$MONIT_USER\" \"$pass\"" >> ${PG_CONFIG_DIR}/userlist.txt
+  echo "Wrote authentication credentials to ${PG_CONFIG_DIR}/userlist.txt"
+fi
+
 if [ ! -f ${PG_CONFIG_DIR}/pgbouncer.ini ]; then
   echo "Create pgbouncer config in ${PG_CONFIG_DIR}"
 
