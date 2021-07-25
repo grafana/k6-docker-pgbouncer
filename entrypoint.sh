@@ -6,36 +6,12 @@ set -e
 # Here are some parameters. See all on
 # https://pgbouncer.github.io/config.html
 
-PG_CONFIG_DIR=/etc/pgbouncer
-
-if [ -n "$DATABASE_URL" ]; then
-  # Thanks to https://stackoverflow.com/a/17287984/146289
-
-  # Allow to pass values like dj-database-url / django-environ accept
-  proto="$(echo $DATABASE_URL | grep :// | sed -e's,^\(.*://\).*,\1,g')"
-  url="$(echo $DATABASE_URL | sed -e s,$proto,,g)"
-
-  # extract the user and password (if any)
-  userpass=$(echo $url | grep @ | sed -r 's/^(.*)@([^@]*)$/\1/')
-  DB_PASSWORD="$(echo $userpass | grep : | cut -d: -f2)"
-  if [ -n "$DB_PASSWORD" ]; then
-    DB_USER=$(echo $userpass | grep : | cut -d: -f1)
-  else
-    DB_USER=$userpass
-  fi
-
-  # extract the host -- updated
-  hostport=`echo $url | sed -e s,$userpass@,,g | cut -d/ -f1`
-  port=`echo $hostport | grep : | cut -d: -f2`
-  if [ -n "$port" ]; then
-      DB_HOST=`echo $hostport | grep : | cut -d: -f1`
-      DB_PORT=$port
-  else
-      DB_HOST=$hostport
-  fi
-
-  DB_NAME="$(echo $url | grep / | cut -d/ -f2-)"
+if [ -n "$TEST" ]; then
+  PG_CONFIG_DIR=./test
+else
+  PG_CONFIG_DIR=/etc/pgbouncer
 fi
+
 
 # Write the password with MD5 encryption, to avoid printing it during startup.
 # Notice that `docker inspect` will show unencrypted env variables.
@@ -47,13 +23,33 @@ if [ ! -e "${_AUTH_FILE}" ]; then
   touch "${_AUTH_FILE}"
 fi
 
-if [ -n "$DB_USER" -a -n "$DB_PASSWORD" -a -e "${_AUTH_FILE}" ] && ! grep -q "^\"$DB_USER\"" "${_AUTH_FILE}"; then
+if [ -n "$METRICS_DB_USER" -a -n "$METRICS_DB_PASSWORD" -a -e "${_AUTH_FILE}" ] && ! grep -q "^\"$METRICS_DB_USER\"" "${_AUTH_FILE}"; then
   if [ "$AUTH_TYPE" != "plain" ]; then
-     pass="md5$(echo -n "$DB_PASSWORD$DB_USER" | md5sum | cut -f 1 -d ' ')"
+     pass="md5$(echo -n "$METRICS_DB_PASSWORD$METRICS_DB_USER" | md5sum | cut -f 1 -d ' ')"
   else
-     pass="$DB_PASSWORD"
+     pass="$METRICS_DB_PASSWORD"
   fi
-  echo "\"$DB_USER\" \"$pass\"" >> ${PG_CONFIG_DIR}/userlist.txt
+  echo "\"$METRICS_DB_USER\" \"$pass\"" >> ${PG_CONFIG_DIR}/userlist.txt
+  echo "Wrote authentication credentials to ${PG_CONFIG_DIR}/userlist.txt"
+fi
+
+if [ -n "$METRICS_REPLICA_DB_USER" -a -n "$METRICS_REPLICA_DB_PASSWORD" -a -e "${_AUTH_FILE}" ] && ! grep -q "^\"$METRICS_REPLICA_DB_USER\"" "${_AUTH_FILE}"; then
+  if [ "$AUTH_TYPE" != "plain" ]; then
+     pass="md5$(echo -n "$METRICS_REPLICA_DB_PASSWORD$METRICS_REPLICA_DB_USER" | md5sum | cut -f 1 -d ' ')"
+  else
+     pass="$METRICS_REPLICA_DB_PASSWORD"
+  fi
+  echo "\"$METRICS_REPLICA_DB_USER\" \"$pass\"" >> ${PG_CONFIG_DIR}/userlist.txt
+  echo "Wrote authentication credentials to ${PG_CONFIG_DIR}/userlist.txt"
+fi
+
+if [ -n "$LOADIMPACT_DB_USER" -a -n "$LOADIMPACT_DB_PASSWORD" -a -e "${_AUTH_FILE}" ] && ! grep -q "^\"$LOADIMPACT_DB_USER\"" "${_AUTH_FILE}"; then
+  if [ "$AUTH_TYPE" != "plain" ]; then
+     pass="md5$(echo -n "$LOADIMPACT_DB_PASSWORD$LOADIMPACT_DB_USER" | md5sum | cut -f 1 -d ' ')"
+  else
+     pass="$LOADIMPACT_DB_PASSWORD"
+  fi
+  echo "\"$LOADIMPACT_DB_USER\" \"$pass\"" >> ${PG_CONFIG_DIR}/userlist.txt
   echo "Wrote authentication credentials to ${PG_CONFIG_DIR}/userlist.txt"
 fi
 
@@ -77,9 +73,27 @@ if [ ! -f ${PG_CONFIG_DIR}/pgbouncer.ini ]; then
   printf "\
 ################## Auto generated ##################
 [databases]
-${DB_NAME:-*} = host=${DB_HOST:?"Setup pgbouncer config error! You must set DB_HOST env"} \
-port=${DB_PORT:-5432} user=${DB_USER:-postgres}
-${CLIENT_ENCODING:+client_encoding = ${CLIENT_ENCODING}\n}\
+${METRICS_DB_NAME:-*} = \
+host=${METRICS_DB_HOST:?"Setup pgbouncer config error! You must set METRICS_DB_HOST env"} \
+port=${METRICS_DB_PORT:-5432} \
+user=${METRICS_DB_USER:-postgres} \
+${METRICS_DB_POOL_SIZE:+pool_size=${METRICS_DB_POOL_SIZE}} \
+${CLIENT_ENCODING:+client_encoding=${CLIENT_ENCODING}} \
+
+${METRICS_REPLICA_DB_NAME:-*} = \
+host=${METRICS_REPLICA_DB_HOST:?"Setup pgbouncer config error! You must set METRICS_REPLICA_DB_HOST env"} \
+port=${METRICS_REPLICA_DB_PORT:-5432} \
+user=${METRICS_REPLICA_DB_USER:-postgres} \
+${METRICS_REPLICA_DB_POOL_SIZE:+pool_size=${METRICS_REPLICA_DB_POOL_SIZE}} \
+${CLIENT_ENCODING:+client_encoding=${CLIENT_ENCODING}} \
+
+${LOADIMPACT_DB_NAME:-*} = \
+host=${LOADIMPACT_DB_HOST:?"Setup pgbouncer config error! You must set LOADIMPACT_DB_HOST env"} \
+port=${LOADIMPACT_DB_PORT:-5432} \
+user=${LOADIMPACT_DB_USER:-postgres} \
+${LOADIMPACT_DB_POOL_SIZE:+pool_size=${LOADIMPACT_DB_POOL_SIZE}} \
+${CLIENT_ENCODING:+client_encoding=${CLIENT_ENCODING}} \
+
 
 [pgbouncer]
 listen_addr = ${LISTEN_ADDR:-0.0.0.0}
