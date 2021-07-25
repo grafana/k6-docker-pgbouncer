@@ -4,6 +4,9 @@ Loadimpact patches
 
 - Build as loadimpact/pgbouncer docker image
 
+- There are placeholders for a three named databases: `METRICS_DB_*`, `METRICS_REPLICA_DB_*`, `LOADIMPACT_DB_*` instead of the single `DB_*` (see `entypoint.sh` file). 
+
+- Per database pool size settings, *_POOL_SIZE env vars (see `entypoint.sh` file).
 
 PgBouncer Docker image
 ======================
