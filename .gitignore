@@ -1,2 +1,4 @@
 README.html
 *.swp
+test/userlist.txt
+test/pgbouncer.ini

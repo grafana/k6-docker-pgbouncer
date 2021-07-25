@@ -6,7 +6,11 @@ set -e
 # Here are some parameters. See all on
 # https://pgbouncer.github.io/config.html
 
-PG_CONFIG_DIR=/etc/pgbouncer
+if [ -n "$TEST" ]; then
+  PG_CONFIG_DIR=./test
+else
+  PG_CONFIG_DIR=/etc/pgbouncer
+fi
 
 if [ -n "$DATABASE_URL" ]; then
   # Thanks to https://stackoverflow.com/a/17287984/146289
@@ -77,9 +81,24 @@ if [ ! -f ${PG_CONFIG_DIR}/pgbouncer.ini ]; then
   printf "\
 ################## Auto generated ##################
 [databases]
-${DB_NAME:-*} = host=${DB_HOST:?"Setup pgbouncer config error! You must set DB_HOST env"} \
-port=${DB_PORT:-5432} user=${DB_USER:-postgres}
-${CLIENT_ENCODING:+client_encoding = ${CLIENT_ENCODING}\n}\
+${METRICS_DB_NAME:-*} = \
+host=${METRICS_DB_HOST:?"Setup pgbouncer config error! You must set METRICS_DB_HOST env"} \
+port=${METRICS_DB_PORT:-5432} \
+user=${METRICS_DB_USER:-postgres} \
+${CLIENT_ENCODING:+client_encoding=${CLIENT_ENCODING}} \
+
+${METRICS_REPLICA_DB_NAME:-*} = \
+host=${METRICS_REPLICA_DB_HOST:?"Setup pgbouncer config error! You must set METRICS_REPLICA_DB_HOST env"} \
+port=${METRICS_REPLICA_DB_PORT:-5432} \
+user=${METRICS_REPLICA_DB_USER:-postgres} \
+${CLIENT_ENCODING:+client_encoding=${CLIENT_ENCODING}} \
+
+${LOADIMPACT_DB_NAME:-*} = \
+host=${LOADIMPACT_DB_HOST:?"Setup pgbouncer config error! You must set LOADIMPACT_DB_HOST env"} \
+port=${LOADIMPACT_DB_PORT:-5432} \
+user=${LOADIMPACT_DB_USER:-postgres} \
+${CLIENT_ENCODING:+client_encoding=${CLIENT_ENCODING}} \
+
 
 [pgbouncer]
 listen_addr = ${LISTEN_ADDR:-0.0.0.0}
