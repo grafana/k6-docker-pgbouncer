@@ -1,5 +1,5 @@
 IMAGE_NAME=loadimpact/pgbouncer
-IMAGE_VERSION=1.15.0
+IMAGE_VERSION=1.15.0-202107251833
 
 docker:
 	docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
