@@ -73,21 +73,24 @@ if [ ! -f ${PG_CONFIG_DIR}/pgbouncer.ini ]; then
   printf "\
 ################## Auto generated ##################
 [databases]
-${METRICS_DB_NAME:-*} = \
+metrics = \
+dbname=${METRICS_DB_NAME} \
 host=${METRICS_DB_HOST:?"Setup pgbouncer config error! You must set METRICS_DB_HOST env"} \
 port=${METRICS_DB_PORT:-5432} \
 user=${METRICS_DB_USER:-postgres} \
 ${METRICS_DB_POOL_SIZE:+pool_size=${METRICS_DB_POOL_SIZE}} \
 ${CLIENT_ENCODING:+client_encoding=${CLIENT_ENCODING}} \
 
-${METRICS_REPLICA_DB_NAME:-*} = \
+metrics_replica = \
+dbname=${METRICS_REPLICA_DB_NAME} \
 host=${METRICS_REPLICA_DB_HOST:?"Setup pgbouncer config error! You must set METRICS_REPLICA_DB_HOST env"} \
 port=${METRICS_REPLICA_DB_PORT:-5432} \
 user=${METRICS_REPLICA_DB_USER:-postgres} \
 ${METRICS_REPLICA_DB_POOL_SIZE:+pool_size=${METRICS_REPLICA_DB_POOL_SIZE}} \
 ${CLIENT_ENCODING:+client_encoding=${CLIENT_ENCODING}} \
 
-${LOADIMPACT_DB_NAME:-*} = \
+loadimpact = \
+dbname=${LOADIMPACT_DB_NAME} \
 host=${LOADIMPACT_DB_HOST:?"Setup pgbouncer config error! You must set LOADIMPACT_DB_HOST env"} \
 port=${LOADIMPACT_DB_PORT:-5432} \
 user=${LOADIMPACT_DB_USER:-postgres} \
