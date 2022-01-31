@@ -1,13 +1,13 @@
-IMAGE_NAME=loadimpact/pgbouncer
-IMAGE_VERSION=1.15.0-202107251833
+IMAGE_NAME=grafana/k6-pgbouncer
+IMAGE_VERSION=1.15.0-202107261332
 
-docker:
+.PHONY: build
+build:
 	docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
-	docker tag $(IMAGE_NAME):$(IMAGE_VERSION) $(IMAGE_NAME):latest
 
+.PHONY: push
 push:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
-	docker push $(IMAGE_NAME):latest
 
 .PHONY: test
 test:
